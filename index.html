@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light screen - Versão Final Otimizada</title>
+</head>
+<body>
+
+    <!-- Topo da plataforma -->
+    <header>
+        <div class="logo">🔆 Light<span>screen</span></div>
+        
+        <!-- Painel de Nível de Competição -->
+        <div class="level-badge">
+            ⭐ Nível Streamer: <span id="txtNivel">1</span> 
+            <span style="font-size:11px; color:#888;">(XP: <span id="txtXP">0</span>/100)</span>
+        </div>
+
+        <!-- Exibição de Saldo de Presentes -->
+        <div class="points-badge">🪙 Saldo: <span id="txtSaldoPontos">1000</span> Pontos</div>
+        
+        <div class="profile-container">
+            <span id="statusUsuario" style="font-size: 13px; color: #aaa;">@Visitante</span>
+            <img id="avatarTopo" class="avatar-topo" src="" alt="Avatar">
+        </div>
+    </header>
+
+    <div class="grid-layout">
+        
+        <!-- Lado Esquerdo: Player, Presentes, Configurações e Comentários -->
+        <div class="main-content">
+            
+            <div class="tabs">
+                <button id="tabLongo" class="tab-btn active" onclick="mudarTipoVideo('longo')">🎥 Vídeos Longos</button>
+                <button id="tabShort" class="tab-btn" onclick="mudarTipoVideo('shorts')">📱 Shorts Curtos</button>
+            </div>
+
+            <!-- Player Dinâmico com Controle de Audiência -->
+            <div id="boxVideo" class="video-container">
+                <div id="tagAoVivo" class="live-tag">● AO VIVO</div>
+                <div id="playerBloqueado" class="blocked-message" style="display:none;">
+                    🛑 CONTEÚDO RESTRITO: Este conteúdo é para maiores de 18 anos e foi bloqueado para o seu perfil infantil.
+                </div>
+                <div id="placeholderPlayer" class="player-placeholder">
+                    <span>Transmissão Iniciada: Configurando Emuladores no PC Antigo</span>
+                </div>
+                <video id="playerNativo" controls></video>
+            </div>
+
+            <!-- Painel de Envio de Presentes da Transmissão -->
+            <div class="panel gift-panel">
+                <h4>🎁 Enviar Presentes na Live (Ganha +10 XP para o Nível!)</h4>
+                <div class="gift-buttons">
+                    <button class="gift-btn" onclick="enviarPresente('🎮 Controle Xbox')">🎮 Controle</button>
+                    <button class="gift-btn" onclick="enviarPresente('🔥 Troféu Bronze')">🔥 Troféu</button>
+                    <button class="gift-btn" onclick="enviarPresente('🚀 Estrela')">🚀 Estrela</button>
+                    <button class="gift-btn" onclick="enviarPresente('🍕 Pizza Gamer')">🍕 Pizza</button>
+                </div>
+            </div>
+
+            <!-- Painel de Perfil, Vídeos e Controle de Idade -->
+            <div class="panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <h4>👤 Seu Perfil & Filtro de Idade</h4>
+                    <input type="text" id="username" class="input-user" placeholder="Seu apelido..." oninput="salvarUsuario()">
+                    
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 11px; color: #aaa;">Sua Classificação Etária:</label>
+                        <select id="filtroIdadePerfil" class="input-user" onchange="alterarFiltroIdadePerfil()">
+                            <option value="livre">👶 Perfil Infantil (Livre + Censura de Palavrões)</option>
+                            <option value="adulto">🧑 Perfil Adulto (Ver tudo sem restrições)</option>
+                        </select>
+                    </div>
+
+                    <label class="btn-upload" style="margin-top: 8px;">📸 Mudar Foto de Perfil
+                        <input type="file" class="input-file" accept="image/*" onchange="atualizarFotoPerfil(this)">
+                    </label>
+                </div>
+                
+                <div>
+                    <h4>📁 Postar Vídeo & Definir Público</h4>
+                    <label class="btn-upload">🎥 Escolher Arquivo do Computador
+                        <input type="file" class="input-file" accept="video/*" onchange="carregarVideoProprio(this)">
+                    </label>
+                    <input type="text" id="tituloVideo" class="input-user" placeholder="Título do vídeo..." value="Meu Vídeo Customizado">
+                    
+                    <div style="margin-top: 5px;">
+                        <label style="font-size: 11px; color: #aaa;">Restrição do conteúdo enviado:</label>
+                        <select id="classificacaoVideo" class="input-user" onchange="atualizarAudienciaVideo()">
+                            <option value="livre">🟢 Conteúdo Livre (Para Crianças)</option>
+                            <option value="adulto">🔴 Conteúdo Restrito (Para Adultos +18)</option>
+                        </select>
+                    </div>
+                    <button class="btn-sm" style="width: 100%; margin-top: 8px; font-weight: bold;" onclick="comprarPontos()">🛒 Recarregar +500 Pontos (Grátis)</button>
+                </div>
+            </div>
+
+            <!-- Área de Comentários -->
+            <div class="comments-section">
+                <h3>Comentários da Comunidade</h3>
+                <div style="margin-top: 10px;">
+                    <textarea id="textoComentario" rows="2" placeholder="Escreva algo público usando emojis..."></textarea>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button class="btn-interact" onclick="toggleEmojiKeyboard()">😀 Emojis</button>
+                        <button class="btn-interact" style="background:#107c10; margin-left:auto;" onclick="postarComentario()">Enviar</button>
+                    </div>
+                    <div id="tecladoEmoji" class="emoji-keyboard">
+                        <span onclick="inserirEmoji('😀')">😀</span><span onclick="inserirEmoji('😂')">😂</span><span onclick="inserirEmoji('🔥')">🔥</span><span onclick="inserirEmoji('🎮')">🎮</span>
+                        <span onclick="inserirEmoji('👍')">👍</span><span onclick="inserirEmoji('❤️')">❤️</span><span onclick="inserirEmoji('🚀')">🚀</span><span onclick="inserirEmoji('👀')">👀</span>
+                    </div>
+                </div>
+                <div id="listaComentarios" class="comments-list"></div>
+            </div>
+        </div>
+
+        <!-- Lado Direito: Mensagens e Chat da Transmissão -->
+        <div class="side-panels">
+            <div class="panel live-chat">
+                <h4>💬 Chat da Transmissão / Presentes</h4>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-msg"><span class="chat-user">@ModderX:</span> O Light screen tá voando baixo no PC!</div>
+                </div>
+            </div>
+
+            <div class="panel dm-chat">
+                <h4>💬 Conversa Privada com Amigos</h4>
+                <div class="friend-selector">Conversando com: <strong style="color: #107c10;">@Modder_Windows10</strong></div>
+                <div id="dmMessages" class="dm-messages">
+                    <div class="chat-msg"><span style="color:#aaa;">@Modder_Windows10:</span> E aí, de boa? Conseguiu arrumar o script?</div>
+                </div>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="text" id="txtDM" class="input-user" style="margin-top:0;" placeholder="Mensagem no privado...">
+                    <button class="btn-sm" onclick="enviarMensagemDireta()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0c0c0c; color: #e0e0e0; padding-bottom: 50px; }
+    
+    header { background-color: #161616; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; width: 100%; top: 0; z-index: 100; border-bottom: 2px solid #107c10; }
+    .logo { color: #107c10; font-weight: bold; font-size: 24px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+    .logo span { color: #fff; font-weight: 300; }
+    
+    .level-badge { background: #1a1a1a; border: 1px solid #ffca28; color: #ffca28; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .points-badge { background: #1f1f1f; border: 1px solid #107c10; color: #107c10; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+    
+    .profile-container { display: flex; align-items: center; gap: 10px; }
+    .avatar-topo { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid #107c10; background: #333; }
+
+    .grid-layout { max-width: 1400px; margin: 80px auto 20px auto; display: grid; grid-template-columns: 2.3fr 1.4fr; gap: 20px; padding: 0 20px; }
+    .main-content { display: flex; flex-direction: column; gap: 15px; }
+    
+    .tabs { display: flex; gap: 10px; margin-bottom: 5px; }
+    .tab-btn { background: #161616; color: white; border: 1px solid #222; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .tab-btn.active { background: #107c10; border-color: #107c10; }
+
+    .video-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 2px solid #1c1c1c; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .video-container.shorts { aspect-ratio: 9/16; max-width: 320px; margin: 0 auto; }
+    video { width: 100%; height: 100%; object-fit: contain; display: none; }
+    
+    .blocked-message { background: #420b0b; border: 2px solid #ff0000; border-radius: 8px; color: #ff8888; font-weight: bold; text-align: center; padding: 30px; position: absolute; width: 90%; z-index: 20; font-size: 14px; }
+    .player-placeholder { font-size: 18px; color: #107c10; text-align: center; padding: 20px; font-weight: bold; }
+    .live-tag { position: absolute; top: 15px; left: 15px; background: #ff0000; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; animation: piscar 1.5s infinite; z-index: 10; }
+    
+    .panel { background: #161616; padding: 15px; border-radius: 12px; border: 1px solid #222; }
+    .panel h4 { color: #107c10; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    
+    select.input-user { background-color: #020202; color: #fff; cursor: pointer; }
+    
+    .gift-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 5px; }
+    .gift-btn { background: #020202; border: 1px solid #333; color: white; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    .gift-btn:hover { border-color: #107c10; background: #121212; }
+
+    .side-panels { display: flex; flex-direction: column; gap: 15px; }
+    .chat-messages, .dm-messages { padding: 10px; background: #020202; border-radius: 8px; height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px; border: 1px solid #222; }
+    .chat-msg { background: #1f1f1f; padding: 6px; border-radius: 6px; word-break: break-all; }
+    .chat-user { color: #107c10; font-weight: bold; }
+    .gift-alert { background: rgba(16, 124, 16, 0.2); border-left: 3px solid #107c10; color: #e0e0e0; font-weight: bold; }
+
+    .comments-section { background: #161616; padding: 20px; border-radius: 12px; border: 1px solid #222; }
+    textarea { width: 100%; background: #020202; border: 1px solid #333; border-radius: 8px; padding: 12px; color: white; resize: none; outline: none; font-size: 14px; }
+    .btn-interact { background: #262626; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-sm { background: #107c10; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+    .emoji-keyboard { background: #020202; border: 1px solid #333; border-radius: 8px; padding: 10px; display: none; grid-template-columns: repeat(8, 1fr); gap: 8px; font-size: 22px; margin-top: 10px; }
+    .emoji-keyboard span { cursor: pointer; text-align: center; }
+
+    .comments-list { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .comment-item { background: #020202; padding: 12px; border-radius: 8px; border-left: 3px solid #107c10; display: flex; gap: 10px; }
+    .avatar-comentario { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: #333; }
+    @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+</style>
+<script>
+    let tipoVideoAtual = 'longo';
+    const fotoPadrao = "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='30' height='30' viewBox='0 0 30 30'><circle cx='15' cy='15' r='15' fill='%23444'/></svg>";
+
+    // Lista de moderação contra palavrões automáticos no perfil infantil [USER]
+    const listaPalavroes = ["bosta", "droga", "caramba", "palavrao1", "palavrao2"];
+
+    window.onload = function() {
+        // Carrega o saldo de pontos da carteira virtual [USER]
+        if (!localStorage.getItem('light_screen_points')) localStorage.setItem('light_screen_points', '1000');
+        document.getElementById('txtSaldoPontos').innerText = localStorage.getItem('light_screen_points');
+
+        // Carrega os dados de Nível e Nivelamento da competição [USER]
+        if (!localStorage.getItem('light_screen_level')) {
+            localStorage.setItem('light_screen_level', '1');
+            localStorage.setItem('light_screen_xp', '0');
+        }
+        document.getElementById('txtNivel').innerText = localStorage.getItem('light_screen_level');
+        document.getElementById('txtXP').innerText = localStorage.getItem('light_screen_xp');
+
+        // Inicializa ou resgata as travas do perfil infantil [USER]
+        if (!localStorage.getItem('light_screen_age_filter')) localStorage.setItem('light_screen_age_filter', 'livre');
+        document.getElementById('filtroIdadePerfil').value = localStorage.getItem('light_screen_age_filter');
+
+        // Carrega o nome e foto salvos automaticamente no PC [USER]
+        if(localStorage.getItem('light_screen_user')) {
+            const usuarioSalvo = localStorage.getItem('light_screen_user');
+            document.getElementById('username').value = usuarioSalvo;
+            document.getElementById('statusUsuario').innerText = `@${usuarioSalvo}`;
+        }
+        document.getElementById('avatarTopo').src = localStorage.getItem('light_screen_avatar') || fotoPadrao;
+
+        // Recupera o chat privado mantido na memória offline [USER]
+        if(localStorage.getItem('light_screen_dms')) document.getElementById('dmMessages').innerHTML = localStorage.getItem('light_screen_dms');
+
+        // Dispara o chat automatizado de fundo
+        setInterval(simularChatPublico, 4000);
+        verificarRestricaoVideo();
+    };
+
+    // Aplica o filtro de substituição de termos impróprios [USER]
+    function censurarTexto(texto) {
+        let textoModificado = texto;
+        listaPalavroes.forEach(palavra => {
+            const expressaoReg = new RegExp(palavra, "gi");
+            textoModificado = textoModificado.replace(expressaoReg, "****");
+        });
+        return textoModificado;
+    }
+
+    // Compara o tipo do vídeo com o perfil do espectador para bloquear se necessário [USER]
+    function verificarRestricaoVideo() {
+        const perfilIdade = localStorage.getItem('light_screen_age_filter');
+        const videoAudiencia = document.getElementById('classificacaoVideo').value;
+        const msgBloqueio = document.getElementById('playerBloqueado');
+        const videoPlayer = document.getElementById('playerNativo');
+        const placeholder = document.getElementById('placeholderPlayer');
+
+        if (perfilIdade === 'livre' && videoAudiencia === 'adulto') {
+            msgBloqueio.style.display = 'block';
+            videoPlayer.style.display = 'none';
+            placeholder.style.display = 'none';
+            videoPlayer.pause();
+        } else {
+            msgBloqueio.style.display = 'none';
+            if(videoPlayer.src) {
+                videoPlayer.style.display = 'block';
+            } else {
+                placeholder.style.display = 'block';
+            }
+        }
+    }
+
+    function alterarFiltroIdadePerfil() {
+        localStorage.setItem('light_screen_age_filter', document.getElementById('filtroIdadePerfil').value);
+        verificarRestricaoVideo();
+    }
+
+    function atualizarAudienciaVideo() {
+        verificarRestricaoVideo();
+    }
+    // Continuação do mecanismo JavaScript do Light screen [USER]
+    function carregarVideoProprio(input) {
+        if (input.files && input.files[0]) {
+            const videoPlayer = document.getElementById('playerNativo');
+            videoPlayer.src = URL.createObjectURL(input.files[0]);
+            verificarRestricaoVideo();
+            if (document.getElementById('playerBloqueado').style.display === 'none') {
+                document.getElementById('placeholderPlayer').style.display = 'none';
+                videoPlayer.style.display = 'block';
+                videoPlayer.play();
+            }
+        }
+    }
+
+    function postarComentario() {
+        const txt = document.getElementById('textoComentario');
+        const lista = document.getElementById('listaComentarios');
+        let nomeUsuario = document.getElementById('username').value.trim() || "Visitante";
+        const fotoAtual = localStorage.getItem('light_screen_avatar') || fotoPadrao;
+        const perfilIdade = localStorage.getItem('light_screen_age_filter');
+
+        if (txt.value.trim() === "") return;
+
+        let comentarioFinal = txt.value;
+        if (perfilIdade === 'livre') {
+            comentarioFinal = censurarTexto(comentarioFinal);
+        }
+
+        const item = document.createElement('div');
+        item.className = 'comment-item';
+        item.innerHTML = `<img class="avatar-comentario" src="${fotoAtual}"><div><p><strong>@${nomeUsuario}:</strong> ${comentarioFinal}</p></div>`;
+        lista.insertBefore(item, lista.firstChild);
+        txt.value = "";
+        document.getElementById('tecladoEmoji').style.display = 'none';
+    }
+
+    function enviarPresente(nomePresente) {
+        let saldoAtual = parseInt(localStorage.getItem('light_screen_points'));
+        let nomeUsuario = document.getElementById('username').value.trim() || "Visitante";
+
+        if (saldoAtual >= 10) {
+            saldoAtual -= 10;
+            localStorage.setItem('light_screen_points', saldoAtual.toString());
+            document.getElementById('txtSaldoPontos').innerText = saldoAtual;
+
+            const chatBox = document.getElementById('chatMessages');
+            const alerta = document.createElement('div');
+            alerta.className = 'chat-msg gift-alert';
+            alerta.innerHTML = `🎁 <strong>@${nomeUsuario}</strong> enviou: ${nomePresente}! (+10 XP)`;
+            chatBox.appendChild(alerta);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            computarXP(10);
+        } else {
+            alert("Saldo de pontos esgotado!");
+        }
+    }
+
+    function computarXP(quantidade) {
+        let xpAtual = parseInt(localStorage.getItem('light_screen_xp'));
+        let nivelAtual = parseInt(localStorage.getItem('light_screen_level'));
+        xpAtual += quantity = quantidade;
+        
+        if (xpAtual >= 100) {
+            nivelAtual += 1;
+            xpAtual = xpAtual - 100;
+            alert(`🎉 VITÓRIA NA COMPETIÇÃO! Você subiu para o Nível ${nivelAtual}!`);
+        }
+        localStorage.setItem('light_screen_xp', xpAtual.toString());
+        localStorage.setItem('light_screen_level', nivelAtual.toString());
+        document.getElementById('txtXP').innerText = xpAtual;
+        document.getElementById('txtNivel').innerText = nivelAtual;
+    }
+
+    function enviarMensagemDireta() {
+        const txtBox = document.getElementById('txtDM');
+        const dmBox = document.getElementById('dmMessages');
+        let nomeUsuario = document.getElementById('username').value.trim() || "Você";
+        if (txtBox.value.trim() === "") return;
+
+        let textoDM = txtBox.value;
+        if (localStorage.getItem('light_screen_age_filter') === 'livre') {
+            textoDM = censurarTexto(textoDM);
+        }
+
+        const novaMsg = document.createElement('div');
+        novaMsg.className = 'chat-msg';
+        novaMsg.innerHTML = `<span style="color:#107c10; font-weight:bold;">@${nomeUsuario}:</span> ${textoDM}`;
+        dmBox.appendChild(novaMsg);
+        dmBox.scrollTop = dmBox.scrollHeight;
+        localStorage.setItem('light_screen_dms', dmBox.innerHTML);
+        txtBox.value = "";
+    }
+
+    function mudarTipoVideo(tipo) {
+        tipoVideoAtual = tipo;
+        const box = document.getElementById('boxVideo');
+        document.getElementById('tabLongo').className = tipo === 'longo' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabShort').className = tipo === 'shorts' ? 'tab-btn active' : 'tab-btn';
+        box.className = tipo === 'shorts' ? "video-container shorts" : "video-container";
+        verificarRestricaoVideo();
+    }
+
+    function salvarUsuario() {
+        const nome = document.getElementById('username').value.trim();
+        localStorage.setItem('light_screen_user', nome);
+        document.getElementById('statusUsuario').innerText = nome ? `@${nome}` : "@Visitante";
+    }
+
+    function atualizarFotoPerfil(input) {
+        if (input.files && input.files[0]) {
+            const leitor = new FileReader();
+            leitor.onload = function(e) {
+                localStorage.setItem('light_screen_avatar', e.target.result);
+                document.getElementById('avatarTopo').src = e.target.result;
+            };
+            leitor.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function toggleEmojiKeyboard() {
+        const kb = document.getElementById('tecladoEmoji');
+        kb.style.display = kb.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    function inserirEmoji(emoji) {
+        const txt = document.getElementById('textoComentario');
+        txt.value += emoji;
+        txt.focus();
+    }
+
+    function comprarPontos() {
+        let saldoAtual = parseInt(localStorage.getItem('light_screen_points'));
+        saldoAtual += 500;
+        localStorage.setItem('light_screen_points', saldoAtual.toString());
+        document.getElementById('txtSaldoPontos').innerText = saldoAtual;
+        alert("Mais 500 pontos fictícios carregados!");
+    }
+
+    function simularChatPublico() {
+        const chatBox = document.getElementById('chatMessages');
+        const users = ["@XboxBR", "@EeePC_User", "@Modder_Janelas", "@GamerGeral"];
+        const frases = ["Live rodando super leve!", "Amei o sistema de presentes", "Nível alto na competição!", "Show de moderação"];
+        
+        const novaMsg = document.createElement('div');
+        novaMsg.className = 'chat-msg';
+        novaMsg.innerHTML = `<span class="chat-user">${users[Math.floor(Math.random()*users.length)]}:</span> ${frases[Math.floor(Math.random()*frases.length)]}`;
+        chatBox.appendChild(novaMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
